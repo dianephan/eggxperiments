@@ -10,13 +10,59 @@ app = Flask(__name__)
 from dotenv import load_dotenv
 load_dotenv()
 
+LAUNCHDARKLY_SDK_KEY = os.getenv("LAUNCHDARKLY_SDK_KEY")
+
+# Experiment and flag keys
+egg_info_flag_key = "change-egg-data"
+
+@app.before_request
+def create_context():
+    pre_existing_dict = {
+        'key': str(uuid.uuid4()),
+        'kind': 'user',
+        'firstName': 'Sandy',
+    }
+    g.context = Context.from_dict(pre_existing_dict)
+
 @app.route("/")
 def home():
-    return "The Earth laughs in flowers. – Ralph Waldo Emerson"
+    # Use the context stored in g
+    egg_info_flag_key_value = ldclient.get().variation(egg_info_flag_key, g.context, False)
+    print(f"*** The {egg_info_flag_key} feature flag evaluates to {egg_info_flag_key_value}")
+
+    # Render different templates based on the flag value
+    if egg_info_flag_key_value == "jokes":
+        return render_template('jokes.html', jokes=egg_jokes)
+    elif egg_info_flag_key_value == "facts":
+        return render_template('index.html', facts=egg_facts)
+
+@app.route("/interaction", methods=['POST'])
+def track_interaction():
+    # Use the context stored in g
+    ldclient.get().track("avg-button-clicks-to-jokes", g.context)
+    ldclient.get().track("clicks-to-find-funniest-joke", g.context)
+
+    print(g.context)
+    print(request.json)
+    
+    return {"status": "success"}
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Initialize LaunchDarkly client
+    ldclient.set_config(Config(LAUNCHDARKLY_SDK_KEY))
 
+    if not ldclient.get().is_initialized():
+        print('SDK failed to initialize')
+        exit()
+
+    print('SDK successfully initialized')
+        
+    try:
+        app.run(debug=True)
+    except Exception as e:
+        print(f"*** Error: {e}")
+    finally:
+        ldclient.close()
 
 # List of egg facts
 egg_facts = [
