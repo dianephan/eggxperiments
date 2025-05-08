@@ -11,6 +11,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 LAUNCHDARKLY_SDK_KEY = os.getenv("LAUNCHDARKLY_SDK_KEY")
+# Initialize LaunchDarkly client
+ldclient.set_config(Config(LAUNCHDARKLY_SDK_KEY))
+
 
 # Experiment and flag keys
 egg_info_flag_key = "change-egg-data"
@@ -27,7 +30,7 @@ def create_context():
 @app.route("/")
 def home():
     # Use the context stored in g
-    egg_info_flag_key_value = ldclient.get().variation(egg_info_flag_key, g.context, False)
+    egg_info_flag_key_value = ldclient.get().variation(egg_info_flag_key, g.context, "facts")
     print(f"*** The {egg_info_flag_key} feature flag evaluates to {egg_info_flag_key_value}")
 
     # Render different templates based on the flag value
@@ -48,9 +51,6 @@ def track_interaction():
     return {"status": "success"}
 
 if __name__ == '__main__':
-    # Initialize LaunchDarkly client
-    ldclient.set_config(Config(LAUNCHDARKLY_SDK_KEY))
-
     if not ldclient.get().is_initialized():
         print('SDK failed to initialize')
         exit()
