@@ -10,14 +10,6 @@ app = Flask(__name__)
 from dotenv import load_dotenv
 load_dotenv()
 
-@app.route("/")
-def home():
-    return "The Earth laughs in flowers. – Ralph Waldo Emerson"
-
-if __name__ == '__main__':
-    app.run(debug=True)
-
-
 # List of egg facts
 egg_facts = [
     "The largest chicken egg ever laid weighed 12 ounces!",
@@ -45,3 +37,11 @@ egg_jokes = [
     {"question": "Why did the egg get promoted?", "answer": "Because it was egg-cellent at its job!"},
     {"question": "What do you call an egg that's a great dancer?", "answer": "An egg-straordinary mover!"}
 ]
+
+@app.route("/")
+def home():
+    return render_template("index.html", facts=egg_facts)
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
