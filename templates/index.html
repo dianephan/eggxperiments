@@ -81,5 +81,22 @@
         </div>
         {% endfor %}
     </div>
+    <script>
+        document.querySelectorAll('.egg').forEach(egg => {
+            egg.addEventListener('click', function() {
+                // Track the interaction
+                fetch('/interaction', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        fact: this.querySelector('.fact').textContent,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+            });
+        });
+    </script>
 </body>
 </html> 

@@ -143,11 +143,31 @@
     <h1>Click on the Eggs to See the Punchline!</h1>
     <div class="container">
         {% for joke in jokes %}
+        <!-- if active then the answer is visible
+          if not active then the answer is hidden
+          -->
         <div class="egg" onclick="this.classList.toggle('active')">
             <div class="question">{{ joke.question }}</div>
             <div class="answer">{{ joke.answer }}</div>
         </div>
         {% endfor %}
     </div>
+    <script>
+        document.querySelectorAll('.egg').forEach(egg => {
+            egg.addEventListener('click', function() {
+                // Track the interaction
+                fetch('/interaction', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        jokeQuestion: this.querySelector('.question').textContent,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+            });
+        });
+    </script>
 </body>
 </html>
